@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<device version="2" rx_modes="CONFIG,WAKEUP,LAZY_CONFIG" cyclic_timeout="88200">
+  <supported_types>
+    <type name="HB-MOIST-SENS" id="HB-MOIST-SENS" updatable="true">
+      <parameter index="9.0" size="1.0" cond_op="GE" const_value="10" />
+      <parameter index="10.0" size="2.0" const_value="0xFBF1" />
+    </type>
+  </supported_types>
+  <paramset type="MASTER" id="hm_uni_sen_dev_master">
+    <parameter id="HBWEA_TRANSMIT_INTERVAL">                       
+      <logical type="integer" min="1" max="1440" unit="Minuten" default="60" />
+      <physical type="integer" interface="config" list="0" index="33.0" size="2" />
+    </parameter>
+  </paramset>
+  <channels>
+    <channel index="0" type="MAINTENANCE" ui_flags="internal" class="maintenance" count="1">
+      <paramset type="MASTER" id="maint_ch_master"></paramset>
+      <paramset type="VALUES" id="maint_ch_values">
+        <parameter id="UNREACH" operations="read,event" ui_flags="service">
+          <logical type="boolean" />
+          <physical type="integer" interface="internal" value_id="UNREACH" />
+        </parameter>
+        <parameter id="STICKY_UNREACH" operations="read,write,event" ui_flags="service,sticky">
+          <logical type="boolean" />
+          <physical type="integer" interface="internal" value_id="STICKY_UNREACH" />
+        </parameter>
+        <parameter id="CONFIG_PENDING" operations="read,event" ui_flags="service">
+          <logical type="boolean" />
+          <physical type="integer" interface="internal" value_id="CONFIG_PENDING" />
+        </parameter>        
+        <parameter id="RSSI_DEVICE" operations="read,event">
+          <logical type="integer" />
+          <physical type="integer" interface="internal" value_id="RSSI_DEVICE" />
+        </parameter>
+        <parameter id="RSSI_PEER" operations="read,event">
+          <logical type="integer" />
+          <physical type="integer" interface="internal" value_id="RSSI_PEER" />
+        </parameter>
+        <parameter id="DEVICE_IN_BOOTLOADER" operations="read,event" ui_flags="service">
+          <logical type="boolean" />
+          <physical type="integer" interface="internal" value_id="DEVICE_IN_BOOTLOADER" />
+        </parameter>
+        <parameter id="UPDATE_PENDING" operations="read,event" ui_flags="service">
+          <logical type="boolean" />
+          <physical type="integer" interface="internal" value_id="UPDATE_PENDING" />
+        </parameter>                                           
+      </paramset>
+    </channel>
+   
+    <channel autoregister="true" index="1" type="WEATHER" count_from_sysinfo="23.0:0.3">
+     <paramset type="MASTER" id="hb_moist_master">
+      <parameter id="CAP_MOIST_HIGH_VALUE">
+       <logical type="integer" min="0" max="1023" unit="" default="830" />              
+       <physical type="integer" interface="config" list="1" index="35.0" size="2" />
+      </parameter>                                                            
+      <parameter id="CAP_MOIST_LOW_VALUE">
+       <logical type="integer" min="0" max="1023" unit="" default="420" /> 
+       <physical type="integer" interface="config" list="1" index="37.0" size="2" />
+      </parameter>         
+     </paramset>
+     <paramset type="VALUES" id="hb_moist_values">
+       <parameter id="HUMIDITY" operations="read,event">
+        <logical type="integer" min="0" max="100" unit="%" />
+         <physical type="integer" interface="command" value_id="HUMIDITY">
+          <event frame="MEASURE_EVENT" />
+         </physical>
+         <description>
+          <field id="AutoconfRoles" value="WEATHER" />
+         </description>
+       </parameter>
+     </paramset>
+     <paramset type="LINK" id="hb_moist_link" />
+    </channel>
+   </channels>
+   
+   <frames>     
+     <frame id="MEASURE_EVENT" direction="from_device" event="true" type="0x53" channel_field="10.0:0.6">
+       <parameter type="integer" index="11.0" size="1.0" param="HUMIDITY"/>
+     </frame>
+     <frame id="MEASURE_EVENT" direction="from_device" event="true" type="0x53" channel_field="12.0:0.6">
+       <parameter type="integer" index="13.0" size="1.0" param="HUMIDITY"/>
+     </frame>
+     <frame id="MEASURE_EVENT" direction="from_device" event="true" type="0x53" channel_field="14.0:0.6">
+       <parameter type="integer" index="15.0" size="1.0" param="HUMIDITY"/>
+     </frame>
+     <frame id="MEASURE_EVENT" direction="from_device" event="true" type="0x53" channel_field="16.0:0.6">
+       <parameter type="integer" index="17.0" size="1.0" param="HUMIDITY"/>
+     </frame>
+     <frame id="MEASURE_EVENT" direction="from_device" event="true" type="0x53" channel_field="18.0:0.6">
+       <parameter type="integer" index="19.0" size="1.0" param="HUMIDITY"/>
+     </frame>
+     <frame id="MEASURE_EVENT" direction="from_device" event="true" type="0x53" channel_field="20.0:0.6">
+       <parameter type="integer" index="21.0" size="1.0" param="HUMIDITY"/>
+     </frame>
+     <frame id="MEASURE_EVENT" direction="from_device" event="true" type="0x53" channel_field="22.0:0.6">
+       <parameter type="integer" index="23.0" size="1.0" param="HUMIDITY"/>
+     </frame>  
+	 <frame id="MEASURE_EVENT" direction="from_device" event="true" type="0x53" channel_field="24.0:0.6">
+       <parameter type="integer" index="25.0" size="1.0" param="HUMIDITY"/>
+     </frame> 	 
+   </frames>
+  <paramset_defs />
+</device>
