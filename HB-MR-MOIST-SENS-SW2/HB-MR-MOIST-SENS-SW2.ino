@@ -84,16 +84,23 @@ Hal hal;
 // ==  der sogenannten List0 gespeichert                              ==
 // =====================================================================
 // ==                                                                 ==
-// == - DREG_TRANSMITTRYMAX (max. Sendeversuche)                      ==
+// == - MASTERID_REGS                                                 ==
 // ==                                                                 ==
-// == - DREG_CYCLICINFOMSG  (Zyklische Statusmeldung)                 ==
+// == - DREG_SABOTAGEMSG (Sabotagemeldung ja/nein)                    ==
 // ==                                                                 ==
-// == - die "freien" Register 0x20/21 werden hier als                 ==
-// ==   16bit memory für das Update-Intervall in Sek.                 ==
+// == - DREG_TRANSMITTRYMAX (max. Sendeversuche 1-10)                 ==
+// ==                                                                 ==
+// == - die "freien" Register 0x20/21 werden hier als 16bit memory    ==
+// ==   für das Sende-Intervall in 1-3600 Sek. verwendet              ==
 // ==   *siehe <parameter id="Sendeintervall">                        ==
 // ==                                                                 ==
+// == - das "freie" Register 0x23 wird hier als 8bit memory für die   ==
+// ==   Differenz der Messungen um eine Sabotagemeldung auszulösen    ==
+// ==   verwendet                                                     ==
+// ==   *siehe <parameter id="sabotageMsgDifferenz">                  ==
+// ==                                                                 ==
 // =====================================================================
-DEFREGISTER(Reg0, MASTERID_REGS, DREG_TRANSMITTRYMAX, DREG_CYCLICINFOMSG, 0x21, 0x22)
+DEFREGISTER(Reg0, MASTERID_REGS, DREG_SABOTAGEMSG, DREG_TRANSMITTRYMAX, 0x21, 0x22, 0x23)
 class SensorList0 : public RegList0<Reg0> {
 public:
     SensorList0(uint16_t addr) : RegList0<Reg0>(addr) {}
@@ -101,10 +108,14 @@ public:
     bool Sendeintervall (uint16_t value) const { return this->writeRegister(0x21, (value >> 8) & 0xff) && this->writeRegister(0x22, value & 0xff); }
     uint16_t Sendeintervall () const { return (this->readRegister(0x21, 0) << 8) + this->readRegister(0x22, 0); }
 
+    bool sabotageMsgDifferenz (uint8_t value) const { return this->writeRegister(0x23, value); }
+    uint8_t sabotageMsgDifferenz () const { return (this->readRegister(0x23, 0)); }
+
     void defaults() {
-      clear();
-      transmitDevTryMax(6);
-      cycleInfoMsg(true); 
+      clear();      
+      sabotageMsg(false);
+      sabotageMsgDifferenz(25);
+      transmitDevTryMax(6);       
       Sendeintervall(60);
     }
 };
@@ -192,6 +203,7 @@ public:
         //sysclock.add(*this);
     }
 
+    // "SabotageMeldung" wird ausgelöst, wenn der Sensor zwischen zwei Messungen z.B: mehr als 25% Verlust hat
     bool testSabotage (uint8_t OldValue, uint8_t NewValue) {
 		    if ((OldValue > NewValue && (OldValue - NewValue) > 25) || (NewValue == 0 && OldValue == 0) || (NewValue == 100 && OldValue == 100)) {
              DPRINT(F("+Sensor Sabotage erkannt: OldValue:")); DDEC(OldValue); DPRINT(F(" / NewValue:"));DDECLN(NewValue);
@@ -313,6 +325,14 @@ public:
   virtual void configChanged() {
       DPRINTLN("Config Changed: List0");
 
+      uint8_t sabotageMsg = this->getList0().sabotageMsg();
+      DPRINT("sabotageMsg: ");
+      DDECLN(sabotageMsg);
+
+      uint8_t sabotageMsgDifferenz = this->getList0().sabotageMsgDifferenz();
+      DPRINT("sabotageMsgDifferenz: ");
+      DDECLN(sabotageMsgDifferenz);
+
       uint8_t txDevTryMax = this->getList0().transmitDevTryMax();
       DPRINT("transmitDevTryMax: ");
       DDECLN(txDevTryMax);
@@ -321,16 +341,16 @@ public:
       DPRINT("updCycle: ");
       DDECLN(updCycle);
 
-      if (/* this->getSwList0().cycleInfoMsg() ==*/ true ) {
-        DPRINTLN("Activate Cycle Msg");
-        sysclock.cancel(cycle);
-        cycle.set(CYCLETIME);
-        sysclock.add(cycle);
-      }
-      else {
-        DPRINTLN("Deactivate Cycle Msg");
-        sysclock.cancel(cycle);
-      }
+      //if (/* this->getSwList0().cycleInfoMsg() ==*/ true ) {
+      //  DPRINTLN("Activate Cycle Msg");
+      //  sysclock.cancel(cycle);
+      //  cycle.set(CYCLETIME);
+      //  sysclock.add(cycle);
+      //}
+      //else {
+      //  DPRINTLN("Deactivate Cycle Msg");
+      //  sysclock.cancel(cycle);
+      //}
   }
 };
 
