@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<device version="2" rx_modes="CONFIG,WAKEUP,LAZY_CONFIG">
+<device version="2">
   <supported_types>
     <type name="HB-MOIST-SENS-SW2" id="HB-MOIST-SENS-SW2">
       <parameter index="9.0" size="1.0" cond_op="E" const_value="0x10" />
@@ -24,7 +24,9 @@
     </parameter>       
   </paramset>
 
-  <channels>
+
+
+  <channels>  
     <channel index="0" type="MAINTENANCE" ui_flags="internal" class="maintenance" count="1">
       <paramset type="MASTER" id="maint_ch_master" />
       <paramset type="VALUES" id="maint_ch_values">
@@ -40,14 +42,6 @@
           <logical type="boolean" />
           <physical type="integer" interface="internal" value_id="CONFIG_PENDING" />
         </parameter>  
-        <parameter id="LOWBAT" operations="read,event" ui_flags="service">
-          <logical type="boolean" />
-          <physical type="integer" interface="internal" value_id="LOWBAT" />
-        </parameter>
-        <parameter id="DUTYCYCLE" operations="read,event" ui_flags="service">
-          <logical type="boolean" />
-          <physical type="integer" interface="internal" value_id="DUTYCYCLE" />
-        </parameter>      
         <parameter id="RSSI_DEVICE" operations="read,event">
           <logical type="integer" />
           <physical type="integer" interface="internal" value_id="RSSI_DEVICE" />
@@ -66,8 +60,10 @@
         </parameter>
       </paramset>
     </channel>
-
-    <channel index="1" type="WEATHER" autoregister="true">
+    
+	
+	
+	<channel index="1" type="WEATHER" autoregister="true">
       <paramset type="MASTER" id="hb_cap_moist_master">
       	<parameter id="CAP_MOIST_HIGH_VALUE">
        		<logical type="integer" min="0" max="1023" unit="" default="830" />
@@ -78,7 +74,6 @@
        		<physical type="integer" interface="config" list="1" index="37.0" size="2" />
       	</parameter>
       </paramset>
-
       <paramset type="VALUES" id="hb_cap_moist_values">
         <parameter id="HUMIDITY" operations="read,event">
           <logical type="integer" min="0" max="100" unit="%"/>
@@ -99,28 +94,31 @@
       </paramset>  
       <paramset type="LINK" id="hb_cap_moist_link"></paramset>
     </channel>
-
+	
+	
+		
     <channel index="2" type="SWITCH" count="2">
       <link_roles>
-        <target name="SWITCH" />
-        <target name="WEATHER_CS" />
-        <target name="WCS_TIPTRONIC_SENSOR" />
+        <target name="SWITCH"/>
+        <target name="WEATHER_CS"/>
+        <target name="WCS_TIPTRONIC_SENSOR"/>
       </link_roles>
       <paramset type="MASTER" id="switch_ch_master">
-        <subset ref="switch_paramset" />
+        <subset ref="switch_paramset"/>
       </paramset>
       <paramset type="VALUES" id="switch_ch_values">
-        <subset ref="switch_valueset" />
+        <subset ref="switch_valueset"/>
       </paramset>
       <paramset type="LINK" id="switch_ch_link">
-        <subset ref="switch_linkset" />
+        <subset ref="switch_linkset"/>
       </paramset>
       <enforce_link>
-        <value id="LCD_SYMBOL" value="2" />
-        <value id="LCD_LEVEL_INTERP" value="1" />
+        <value id="LCD_SYMBOL" value="2"/>
+        <value id="LCD_LEVEL_INTERP" value="1"/>
       </enforce_link>
-    </channel>
+    </channel>  	
   </channels>
+
 
 
   <frames>
@@ -164,6 +162,9 @@
       <parameter type="integer" const_value="0" param="INHIBIT" />
     </frame>
   </frames>
+  
+  
+  
   <paramset_defs>
     <paramset id="switch_valueset">
       <parameter id="STATE" operations="read,write,event" control="SWITCH.STATE">
@@ -182,8 +183,7 @@
         <logical type="float" min="0.0" max="85825945.6" default="0.0" unit="s" />
         <physical type="integer" interface="store" id="ON_TIME" volatile="true" />
         <conversion type="float_integer_scale" factor="10" />
-        <conversion type="integer_tinyfloat" mantissa_start="5" mantissa_size="11" exponent_start="0"
-                    exponent_size="5" />
+        <conversion type="integer_tinyfloat" mantissa_start="5" mantissa_size="11" exponent_start="0" exponent_size="5" />
       </parameter>
       <parameter id="INHIBIT" operations="read,write,event" control="NONE" loopback="true">
         <logical type="boolean" />
@@ -213,6 +213,29 @@
       <parameter id="AES_ACTIVE" ui_flags="internal">
         <logical type="boolean" default="false" />
         <physical type="boolean" interface="internal" value_id="AES" />
+      </parameter>
+	  <parameter id="TRANSMIT_TRY_MAX" operations="read,write">
+        <logical type="integer" min="0" max="10" default="6"/>
+        <physical type="integer" interface="config" list="1" index="48" size="1"/>
+      </parameter>
+      <parameter id="POWERUP_ACTION" operations="read,write">
+        <logical type="option">
+          <option id="POWERUP_OFF" default="true"/>
+          <option id="POWERUP_ON"/>
+        </logical>
+        <physical type="integer" interface="config" list="1" index="86" size="0.1"/>
+      </parameter>
+      <parameter id="STATUSINFO_MINDELAY" operations="read,write">
+        <logical type="float" min="0.5" max="15.5" default="2.0" unit="s">
+          <special_value id="NOT_USED" value="0.0"/>
+        </logical>
+        <physical type="integer" interface="config" list="1" index="87.0" size="0.5"/>
+        <conversion type="float_integer_scale" factor="2"/>
+      </parameter>
+      <parameter id="STATUSINFO_RANDOM" operations="read,write">
+        <logical type="float" min="0.0" max="7.0" default="1.0" unit="s"/>
+        <physical type="integer" interface="config" list="1" index="87.5" size="0.3"/>
+        <conversion type="float_integer_scale" factor="1"/>
       </parameter>
     </paramset>
     <paramset id="switch_linkset">

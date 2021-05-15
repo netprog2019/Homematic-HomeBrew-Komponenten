@@ -1,39 +1,36 @@
 //- -------------------------------------------------------------------------- -
-//-                       kapazitiver Bodenfeuchtesensor                       -
+//-                           HB-MR-MOIST-SENS-SW2                             -
+//-            kapazitiver Bodenfeuchtesensor mit 2 Schaltausgängen            -
 //-                                                                            -
+//-                      (C)2021 netprog2019 13.05.2021                        -
 //- -------------------------------------------------------------------------- -
+//
 // AskSin++
 // 2016-10-31 papa Creative Commons - http://creativecommons.org/licenses/by-nc-sa/3.0/de/
 // 2019-05-03 jp112sdl Creative Commons - http://creativecommons.org/licenses/by-nc-sa/3.0/de/
-// 2019-05-04 stan23 Creative Commons - http://creativecommons.org/licenses/by-nc-sa/3.0/de/
 //------------------------------------------------------------------------------
-
-//Sensor:
-//https://www.dfrobot.com/wiki/index.php/Capacitive_Soil_Moisture_Sensor_SKU:SEN0193
 
 #define EI_NOTEXTERNAL
 #include <EnableInterrupt.h>
 #include <AskSinPP.h>
 #include <LowPower.h>
+
 #include <MultiChannelDevice.h>
 #include <Register.h>
-
 #include <Switch.h>
-#include <ThreeState.h>
 
-// Arduino Pro mini 8 Mhz
-// ----------------------
 
-// Arduino pin für den Config Button
-#define CONFIG_BUTTON_PIN      8
-// Arduino pin für die Status LED
-#define LED_PIN                4
+// ---------------------------------------------------------------------
+//                     Arduino Pro mini 8 Mhz 3.3V
+// ---------------------------------------------------------------------
+#define CONFIG_BUTTON_PIN      8  // Pin für den Config Button
+#define LED_PIN                4  // Pin für die Status LED
 
-#define SENSOR_VCC_PIN         7
-#define SENSOR_PIN             15
+#define SENSOR_VCC_PIN         7  // Pin für die VCC des Sensors
+#define SENSOR_PIN             15 // Pin für den Analog-Out des Sensors
 
-#define SWITCH_PIN1            3
-#define SWITCH_PIN2            6
+#define SWITCH_PIN1            3  // Pin für den 1. Switch
+#define SWITCH_PIN2            6  // Pin für den 2. Switch
 
 // Arduino pin für das c1101 Funkmodul
 #define CC1101_GDO0_PIN        2
@@ -45,39 +42,57 @@
 // number of available peers per channel
 #define PEERS_PER_CHANNEL    4
 #define PEERS_PER_SWCHANNEL  6
-#define CYCLETIME seconds2ticks(60UL * 3 * 0.88)
+
+//Korrekturfaktor der Clock-Ungenauigkeit, wenn keine RTC verwendet wird
+#define SYSCLOCK_FACTOR    0.88
+#define CYCLETIME seconds2ticks(60UL * 3 * SYSCLOCK_FACTOR)
 
 // all library classes are placed in the namespace 'as'
 using namespace as;
 
-//Korrekturfaktor der Clock-Ungenauigkeit, wenn keine RTC verwendet wird
-#define SYSCLOCK_FACTOR    0.88
 
-// define all device properties
-// Bei mehreren Geräten des gleichen Typs muss Device ID und Device Serial unterschiedlich sein!
+
+// =====================================================================
+// ==                Geräteeigenschaften definieren                   ==
+// =====================================================================
 const struct DeviceInfo PROGMEM devinfo = {
   {0xfb, 0xf2, 0x01},          // Device ID
-  "MR1FDD9A01",                // Device Serial 13.05.21 - 1FDD9 / 21.05.75 - 3368F 
-  {0xfb, 0xf2},                // Device Model0xF3, 0x11
-  0x10,                        // Firmware Version
-                               // die CCU Addon xml Datei ist mit der Zeile <parameter index="9.0" size="1.0" cond_op="E" const_value="0x10" />
-                               // fest an diese Firmware Version gebunden! cond_op: E Equal, GE Greater or Equal
-                               // bei Änderungen von Payload, message layout, Datenpunkt-Typen usw. muss die Version an beiden Stellen hochgezogen werden!
+  "MR1FDD9A01",                // Device Serial 13.05.21 - 1FDD9 
+  {0xfb, 0xf2},                // Device Model
+  0x10,                        // Firmware Version                               
   0xAB,                        // Device Type
   {0x01, 0x01}                 // Info Bytes
 };
 
-/**
-   Configure the used hardware
-*/
+
+
+// =====================================================================
+// ==                verwendete Hardware konfigurieren                ==
+// =====================================================================
 typedef AvrSPI<CC1101_CS_PIN, CC1101_MOSI_PIN, CC1101_MISO_PIN, CC1101_SCK_PIN> SPIType;
 typedef Radio<SPIType, CC1101_GDO0_PIN> RadioType;
 typedef StatusLed<LED_PIN> LedType;
 typedef AskSin<LedType, NoBattery, RadioType> Hal;
 Hal hal;
 
-// die "freien" Register 0x20/21 werden hier als 16bit memory für das Update
-// Intervall in Sek. benutzt siehe auch hb-sen-leveljet.xml, <parameter id="Sendeintervall">
+
+
+// =====================================================================
+// ==                     Gerätebezogene Register                     ==
+// =====================================================================
+// ==  Existieren für jedes HomeMatic-Gerät nur einmal und werden in  ==
+// ==  der sogenannten List0 gespeichert                              ==
+// =====================================================================
+// ==                                                                 ==
+// == - DREG_TRANSMITTRYMAX (max. Sendeversuche)                      ==
+// ==                                                                 ==
+// == - DREG_CYCLICINFOMSG  (Zyklische Statusmeldung)                 ==
+// ==                                                                 ==
+// == - die "freien" Register 0x20/21 werden hier als                 ==
+// ==   16bit memory für das Update-Intervall in Sek.                 ==
+// ==   *siehe <parameter id="Sendeintervall">                        ==
+// ==                                                                 ==
+// =====================================================================
 DEFREGISTER(Reg0, MASTERID_REGS, DREG_TRANSMITTRYMAX, DREG_CYCLICINFOMSG, 0x21, 0x22)
 class SensorList0 : public RegList0<Reg0> {
 public:
@@ -89,13 +104,34 @@ public:
     void defaults() {
       clear();
       transmitDevTryMax(6);
-      cycleInfoMsg(true); // CycleInfoMsg hinzugefügt, siehe auch DEFREGISTER 0 oben
+      cycleInfoMsg(true); 
       Sendeintervall(60);
     }
 };
 
 
-DEFREGISTER(Reg1, 0x01, 0x02, 0x03, 0x04, 0x23, 0x24, 0x25, 0x26)
+
+// =====================================================================
+// ==                    Kanalbezogene Register                       ==
+// =====================================================================
+// ==  Existieren für jeden Kanal eines HomeMatic-Gerätes und werden  ==
+// ==  in der sogenannten List1 gespeichert                           ==
+// =====================================================================
+// ==                                                                 ==
+// == Register für Channel 1 - WeatherChannel                         ==
+// ==                                                                 ==
+// == - CREG_EVENTFILTER 0x01                                         ==
+// ==                                                                 ==
+// == - CREG_INTERVAL 0x02                                            ==
+// ==                                                                 ==
+// == - die "freien" Register 0x23/24 und 0x25/26                     ==
+// ==   werden hier jeweils als 16bit memory für das                  ==
+// ==   HIGHValue bzw. LOWValue der Bodenfeuchte                      ==
+// ==   verwendet                                                     ==
+// ==   *siehe <parameter id="CAP_MOIST_HIGH_VALUE">                  ==
+// ==   *siehe <parameter id="CAP_MOIST_LOW_VALUE">                   ==
+// =====================================================================
+DEFREGISTER(Reg1, CREG_EVENTFILTER, CREG_INTERVAL, 0x23, 0x24, 0x25, 0x26)
 class SensorList1 : public RegList1<Reg1> {
   public:
     SensorList1 (uint16_t addr) : RegList1<Reg1>(addr) {}
@@ -108,8 +144,8 @@ class SensorList1 : public RegList1<Reg1> {
 
     void defaults () {
       clear();
-      HIGHValue(1000);//Trocken 830
-      LOWValue(80);//Feucht 420
+      HIGHValue(830);   //Sensor im trocken Zustand = 830
+      LOWValue(420);    //Sensor im feuchten Zustand = 420
     }
 };
 
@@ -117,20 +153,19 @@ class SensorList1 : public RegList1<Reg1> {
 class MessEventMsg : public Message {
 public:
     void init(uint8_t msgcnt, uint8_t h) {
-      //uint8 typ = 0x53; // AS_MESSAGE_SENSOR_DATA;
-      uint8 typ = 0x5E; // AS_MESSAGE_POWER_EVENT_CYCLIC;
-
-      // als Standard wird BCAST gesendet um Energie zu sparen, siehe Beschreibung HB-UNI-Sensor1.
-      // Bei jeder 10. Nachricht senden wir stattdessen BIDI|WKMEUP, um eventuell anstehende Konfigurationsänderungen auch
-      // ohne Betätigung des Anlerntaster übernehmen zu können (mit Verzögerung, worst-case 10x Sendeintervall).
+      uint8 typ = 0x53; // AS_MESSAGE_SENSOR_DATA;
+      
+      // als Standard wird BCAST gesendet um Energie zu sparen.
+      // Bei jeder 10. Nachricht senden wir stattdessen BIDI|WKMEUP, um eventuell anstehende
+      // Konfigurationsänderungen auch ohne Betätigung des Anlerntasters übernehmen zu können
+      // (mit Verzögerung, worst-case 10x Sendeintervall).
       uint8_t flags = BCAST;
-      if ((msgcnt % 5) == 2) {
+      if ((msgcnt % 10) == 2) {
         flags = BIDI | WKMEUP;
       }
 
       Message::init(11, msgcnt, typ, flags , h, 0);
       DPRINT(F("+Humidity         : ")); DDEC(h); DPRINTLN(F(" %"));
-      //pload[0] = h;
     }
 };
 
@@ -219,7 +254,7 @@ public:
     void setup(Device<Hal, SensorList0>* dev, uint8_t number, uint16_t addr) {
         Channel::setup(dev, number, addr);
 
-        set(seconds2ticks(20));    // first message in 20 sec.
+        set(seconds2ticks(5));    // first message in 5 sec.
         sysclock.add(*this);
     }
 
@@ -239,34 +274,9 @@ public:
     }
 };
 
-/*
-class myDevice: public MultiChannelDevice<Hal, Messkanal, 1, SensorList0> {
-public:
-    typedef MultiChannelDevice<Hal, Messkanal, 1, SensorList0> TSDevice;
-    myDevice(const DeviceInfo& info, uint16_t addr)
-        : TSDevice(info, addr)
-    {
-    }
-    virtual ~myDevice() {}
 
-    virtual void configChanged()
-    {
-        TSDevice::configChanged();
-        DPRINTLN("Config Changed: List0");
-
-        uint8_t txDevTryMax = this->getList0().transmitDevTryMax();
-        DPRINT("transmitDevTryMax: ");
-        DDECLN(txDevTryMax);
-
-        uint16_t updCycle = this->getList0().Sendeintervall();
-        DPRINT("updCycle: ");
-        DDECLN(updCycle);
-    }
-};
-*/
 
 typedef SwitchChannel<Hal,PEERS_PER_SWCHANNEL,SensorList0>  SwChannel;
-//typedef ThreeStateChannel<Hal,SensorList0,SensorList1,List4,PEERS_PER_CHANNEL> SensChannel;
 
 class myDevice : public ChannelDevice<Hal,VirtBaseChannel<Hal,SensorList0>,3,SensorList0> {
   class CycleInfoAlarm : public Alarm {
@@ -285,7 +295,7 @@ class myDevice : public ChannelDevice<Hal,VirtBaseChannel<Hal,SensorList0>,3,Sen
 public:
   VirtChannel<Hal,Messkanal,SensorList0> c1;
   VirtChannel<Hal,SwChannel,SensorList0> c2,c3;
-
+  
 
   typedef ChannelDevice<Hal,VirtBaseChannel<Hal,SensorList0>,3,SensorList0> DeviceType;
   myDevice (const DeviceInfo& info,uint16_t addr) : DeviceType(info, addr), cycle(*this) {
@@ -298,7 +308,7 @@ public:
   Messkanal& sensorChannel () { return c1; }
   SwChannel& switch1Channel ()  { return c2; }
   SwChannel& switch2Channel ()  { return c3; }
-
+  
 
   virtual void configChanged() {
       DPRINTLN("Config Changed: List0");
@@ -329,14 +339,13 @@ public:
 myDevice               sdev(devinfo, 0x20);
 ConfigButton<myDevice> cfgBtn(sdev);
 
-void setup() {
-    // !! Serial Port Init (DINIT) via AskSinPP/Debug.h wird 2fach benutzt: Tx AskSinPP Debug out, Rx LevelJet (19200 Baud erforderlich)
+void setup() {    
     DINIT(57600, ASKSIN_PLUS_PLUS_IDENTIFIER);
     sdev.init(hal);
     sdev.switch1Channel().init(SWITCH_PIN1);
     sdev.switch2Channel().init(SWITCH_PIN2);
 
-    buttonISR(cfgBtn, CONFIG_BUTTON_PIN);
+    buttonISR(cfgBtn, CONFIG_BUTTON_PIN);   
     sdev.initDone();
 }
 
@@ -344,6 +353,7 @@ void loop() {
     bool worked = hal.runready();
     bool poll   = sdev.pollRadio();
     if (worked == false && poll == false) {
-        // Device ist Netzteil betrieben und sollte wach bleiben um die Mess-Telegramme der Bodenfeuchte zu empfangen
+        // Device ist Netzteil betrieben und sollte wach bleiben
+        // um die Mess-Telegramme der Bodenfeuchte zu empfangen
     }
 }

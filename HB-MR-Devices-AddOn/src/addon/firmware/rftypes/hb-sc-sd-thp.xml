@@ -295,19 +295,7 @@
             <field id="AutoconfRoles" value="WEATHER" />
           </description>
         </parameter>
-		
-		<parameter id="LORA-Empfangstaerke" operations="read,event">
-          <logical type="integer" min="-255" max="255" unit="dBm" />
-          <physical type="integer" interface="command" value_id="LORA_RSSI">
-            <event frame="WEATHER_EVENT" />
-          </physical>
-          <description>
-            <field id="AutoconfRoles" value="WEATHER" />
-          </description>
-        </parameter>
-		
-		
-		
+				
         <parameter id="ERROR" operations="read,event" ui_flags="service" control="NONE">
           <logical type="option">
             <option id="NO_ERROR" index="0" default="true"/>
