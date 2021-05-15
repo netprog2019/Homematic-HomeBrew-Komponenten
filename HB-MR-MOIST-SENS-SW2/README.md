@@ -15,3 +15,6 @@
 ## Geräte-Einstellungen
 <br>
 <p align="center"><img src="Images/HB-MR-MOIST-SENS-SW2_Einstellungen_1.png?raw=true"/></p>
+
+<br><br>
+## Geräteaufbau

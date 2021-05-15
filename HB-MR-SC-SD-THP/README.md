@@ -17,3 +17,6 @@
 ## Geräte-Einstellungen
 <br>
 <p align="center"><img src="Images/HB-MR-SC-SD-THP_Einstellung_1.jpg?raw=true"/></p>
+
+<br><br>
+## Geräteaufbau
