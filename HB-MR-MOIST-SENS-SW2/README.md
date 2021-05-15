@@ -1,8 +1,17 @@
 ## <img src="Images/hb-moist-sens-sw2.png" width=100/> &nbsp;&nbsp; Bodenfeuchtesensor mit zwei zusätzlichen Schaltausgängen
 
-- kapazitiver Bodenfeuchtesensor, mit SabotageMsg
-- Niederspannungs-Switch1 (z.Bsp. zur Ansteuerung einer Bewässerungspumpe)  
-- Niederspannungs-Switch2 (z.Bsp. zur Ansteuerung einer LED Beleuchtung)
+- kapazitiver Bodenfeuchtesensor, mit SabotageMsg bei zu großer Messdifferenz
+- Niederspannungs-Schaltausgang 1 - (z.Bsp. zur Ansteuerung einer Bewässerungspumpe)  
+- Niederspannungs-Schaltausgang 2 - (z.Bsp. zur Ansteuerung einer LED Beleuchtung)
 
 <br><br>
-<p align="center"><img src="Images/HB-MR-MOIST-SENS-SW2_Bedienung_1.jpg?raw=true"/></p>
+## Bedienung
+<br>
+<p align="center"><img src="Images/HB-MR-MOIST-SENS-SW2_Bedienung_1.png?raw=true"/></p>
+<br>
+<p align="center"><img src="Images/HB-MR-MOIST-SENS-SW2_Bedienung_2.png?raw=true"/></p>
+
+<br><br>
+## Geräte-Einstellungen
+<br>
+<p align="center"><img src="Images/HB-MR-MOIST-SENS-SW2_Einstellungen_1.png?raw=true"/></p>
