@@ -3,7 +3,7 @@
 
 <br>
 
-| &nbsp;&nbsp;&nbsp;&nbsp;Es handelt es sich hierbei um ein reines Hobby-Projekt - Die Verwendung erfolgt auf eigene Gefahr!&nbsp;&nbsp;&nbsp;&nbsp; |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Es handelt es sich hierbei um ein reines Hobby-Projekt - Die Verwendung erfolgt auf eigene Gefahr!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
 |:---:|
 
 <br>
