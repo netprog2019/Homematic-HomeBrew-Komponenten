@@ -3,7 +3,7 @@
 
 <br>
 
-| Es handelt es sich hierbei um ein reines Hobby-Projekt - Die Verwendung erfolgt auf eigene Gefahr! |
+| &nbsp;&nbsp;&nbsp;&nbsp;Es handelt es sich hierbei um ein reines Hobby-Projekt - Die Verwendung erfolgt auf eigene Gefahr!&nbsp;&nbsp;&nbsp;&nbsp; |
 |:---:|
 
 <br>
@@ -51,9 +51,9 @@ Da ich zur Zeit einerseits, aber nur wenige davon, aktiv einsetze und ich anders
 ## <img src="HB-MR-Devices-AddOn/src/addon/www/config/img/devices/250/hb-moist-sens-sw2.png" width=100/> &nbsp;&nbsp; Bodenfeuchtesensor mit zwei zusätzlichen Schaltausgängen 
 :arrow_right: [Projektseite HB-MR-MOIST-SENS-SW2](https://github.com/netprog2019/Homematic-HomeBrew-Komponenten/tree/main/HB-MR-MOIST-SENS-SW2)
 
-- kapazitiver Bodenfeuchtesensor, mit SabotageMsg
-- Niederspannungs-Switch1 (z.Bsp. zur Ansteuerung einer Bewässerungspumpe)  
-- Niederspannungs-Switch2 (z.Bsp. zur Ansteuerung einer LED Beleuchtung)
+- kapazitiver Bodenfeuchtesensor, mit SabotageMsg bei zu großer Messdifferenz
+- Niederspannungs-Schaltausgang 1 - (z.Bsp. zur Ansteuerung einer Bewässerungspumpe)  
+- Niederspannungs-Schaltausgang 2 - (z.Bsp. zur Ansteuerung einer LED Beleuchtung)
 
 
 
