@@ -50,7 +50,7 @@
 // all library classes are placed in the namespace 'as'
 using namespace as;
 
-
+uint8_t sabotageMsgDifferenz;
 
 // =====================================================================
 // ==                Geräteeigenschaften definieren                   ==
@@ -161,6 +161,12 @@ class SensorList1 : public RegList1<Reg1> {
 };
 
 
+
+
+
+// =====================================================================
+// ==            Channel 1 für Anzeige der Bodenfeuchte               ==
+// =====================================================================
 class MessEventMsg : public Message {
 public:
     void init(uint8_t msgcnt, uint8_t h) {
@@ -176,7 +182,7 @@ public:
       }
 
       Message::init(11, msgcnt, typ, flags , h, 0);
-      DPRINT(F("+Humidity         : ")); DDEC(h); DPRINTLN(F(" %"));
+      DPRINT(F("+Bodenfeuchte     : ")); DDEC(h); DPRINTLN(F(" %"));
     }
 };
 
@@ -184,7 +190,7 @@ public:
 class Messkanal : public Channel<Hal, SensorList1, EmptyList, List4, PEERS_PER_CHANNEL, SensorList0>, public Alarm {
     MessEventMsg    msg;
     uint8_t         humidity;
-    uint8_t         sabotage;
+    uint8_t         sabotage;    
 
 public:
     Messkanal() : Channel(), Alarm(0), sabotage(0) {}
@@ -205,8 +211,9 @@ public:
 
     // "SabotageMeldung" wird ausgelöst, wenn der Sensor zwischen zwei Messungen z.B: mehr als 25% Verlust hat
     bool testSabotage (uint8_t OldValue, uint8_t NewValue) {
-		    if ((OldValue > NewValue && (OldValue - NewValue) > 25) || (NewValue == 0 && OldValue == 0) || (NewValue == 100 && OldValue == 100)) {
-             DPRINT(F("+Sensor Sabotage erkannt: OldValue:")); DDEC(OldValue); DPRINT(F(" / NewValue:"));DDECLN(NewValue);
+        if ((OldValue > NewValue && (OldValue - NewValue) > sabotageMsgDifferenz) || (NewValue == 0 && OldValue == 0) || (NewValue == 100 && OldValue == 100)) {
+             DPRINT(F("+Sensor Sabotage mit ")); DDEC(sabotageMsgDifferenz); DPRINT(F("% erkannt: alter Wert: "));
+             DDEC(OldValue); DPRINT(F("% / neuer Wert: ")); DDEC(NewValue); DPRINTLN(F("%"));
 			       return true;
 		    } else {
 			       return false;
@@ -215,15 +222,15 @@ public:
 
     void measure() {
       // save last value
-      uint8_t lastvalue = humidity;
-
-      //now measure sensor power on
+      uint8_t lastvalue = humidity;       
+      
+      //Spannungsversorgung des Sensors einschalten
       pinMode(SENSOR_VCC_PIN, OUTPUT);
       digitalWrite(SENSOR_VCC_PIN, HIGH);
-      //wait a moment to settle
+      // einen kleinen Moment warten, bis sich der Sensor stabilisiert hat
       _delay_ms(500);
 
-      //measure 8 times and calculate average
+      //8 Messungen hintereinander durchführen und daraus den Durchschnitt berechnen
       uint16_t sens_val = 0;
       for (uint8_t i = 0; i < 8; i++) {
         sens_val += analogRead(SENSOR_PIN);
@@ -236,11 +243,11 @@ public:
       uint16_t lower_limit = this->getList1().LOWValue();
       if (sens_val > upper_limit) {
         humidity = 0;
-        DPRINTLN(F(" - größer als HIGH Value (0% Feuchte / Trocken)!"));
+        DPRINTLN(F(" - größer als HIGH Value (zu 0% Feucht === Trocken)!"));
       }
       else if (sens_val < lower_limit) {
         humidity = 100;
-        DPRINTLN(F(" - kleiner als LOW Value (100% Feuchte / Nass)!"));
+        DPRINTLN(F(" - kleiner als LOW Value (zu 100% Feucht === Nass)!"));
       } else {
         uint16_t range = upper_limit - lower_limit;
         uint16_t base = sens_val - lower_limit;
@@ -253,20 +260,20 @@ public:
 
       if( testSabotage(lastvalue,humidity) == true ) {
          sabotage = 1;
-         changed(true); // this triggers StatusInfoMessage to CCU
+         changed(true); // das löst eine StatusInfoMessage (SabotageMeldung) auf der CCU aus
       } else {
         sabotage = 0;
-        changed(true); // this triggers StatusInfoMessage to CCU
+        changed(true); // das löscht die StatusInfoMessage (SabotageMeldung) wieder von der CCU
       }
 
-      //disable all moisture sensors
+      //Spannungsversorgung des Sensors wieder ausschalten
       digitalWrite(SENSOR_VCC_PIN, LOW);
     }
 
     void setup(Device<Hal, SensorList0>* dev, uint8_t number, uint16_t addr) {
         Channel::setup(dev, number, addr);
 
-        set(seconds2ticks(5));    // first message in 5 sec.
+        set(seconds2ticks(5));    // erste Message nach 5 sec.
         sysclock.add(*this);
     }
 
@@ -288,8 +295,16 @@ public:
 
 
 
+// =====================================================================
+// ==                  Channel 2 und 3 für Switch's                   ==
+// =====================================================================
 typedef SwitchChannel<Hal,PEERS_PER_SWCHANNEL,SensorList0>  SwChannel;
 
+
+
+// =====================================================================
+// ==             und nun das eigentliche Gerät definieren            ==
+// =====================================================================
 class myDevice : public ChannelDevice<Hal,VirtBaseChannel<Hal,SensorList0>,3,SensorList0> {
   class CycleInfoAlarm : public Alarm {
         myDevice& dev;
@@ -299,8 +314,7 @@ class myDevice : public ChannelDevice<Hal,VirtBaseChannel<Hal,SensorList0>,3,Sen
 
         void trigger (AlarmClock& clock)  {
           set(CYCLETIME);
-          clock.add(*this);
-          //dev.Messkanal(1).changed(true);
+          clock.add(*this);          
         }
     } cycle;
 
@@ -329,7 +343,7 @@ public:
       DPRINT("sabotageMsg: ");
       DDECLN(sabotageMsg);
 
-      uint8_t sabotageMsgDifferenz = this->getList0().sabotageMsgDifferenz();
+      sabotageMsgDifferenz = this->getList0().sabotageMsgDifferenz();
       DPRINT("sabotageMsgDifferenz: ");
       DDECLN(sabotageMsgDifferenz);
 
@@ -339,25 +353,13 @@ public:
 
       uint16_t updCycle = this->getList0().Sendeintervall();
       DPRINT("updCycle: ");
-      DDECLN(updCycle);
-
-      //if (/* this->getSwList0().cycleInfoMsg() ==*/ true ) {
-      //  DPRINTLN("Activate Cycle Msg");
-      //  sysclock.cancel(cycle);
-      //  cycle.set(CYCLETIME);
-      //  sysclock.add(cycle);
-      //}
-      //else {
-      //  DPRINTLN("Deactivate Cycle Msg");
-      //  sysclock.cancel(cycle);
-      //}
+      DDECLN(updCycle);      
   }
 };
-
-
-
 myDevice               sdev(devinfo, 0x20);
 ConfigButton<myDevice> cfgBtn(sdev);
+
+
 
 void setup() {    
     DINIT(57600, ASKSIN_PLUS_PLUS_IDENTIFIER);
@@ -373,7 +375,6 @@ void loop() {
     bool worked = hal.runready();
     bool poll   = sdev.pollRadio();
     if (worked == false && poll == false) {
-        // Device ist Netzteil betrieben und sollte wach bleiben
-        // um die Mess-Telegramme der Bodenfeuchte zu empfangen
+        // Gerät ist Netzbetrieben und sollte wach bleiben        
     }
 }
