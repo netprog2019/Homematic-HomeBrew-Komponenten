@@ -8,6 +8,7 @@ DEVICE_DESC="Garagensensor (ShutterContact, SmokeDetektor, Temperature, Humidity
 # Name der Piktogramme, bestehend aus xx.png bzw. xx_thumb.png
 DEVICE_IMG=hb-sc-sd-thp.png
 DEVICE_THUMB=hb-sc-sd-thp_thumb.png
+# Name der Gerätebeschreibungs-Datei .xml
 FIRMWARE_FILE=/firmware/rftypes/hb-sc-sd-thp.xml
 
 #------------------------------------------------------------------------------

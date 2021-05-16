@@ -7,13 +7,16 @@ DEVICE_DESC="universeller Wetterdatensensor"
 # Name der Piktogramme, bestehend aus xx.png bzw. xx_thumb.png
 DEVICE_IMG=hb-wea-sens.png
 DEVICE_THUMB=hb-wea-sens_thumb.png
+# Name der Gerätebeschreibungs-Datei .xml
 FIRMWARE_FILES=/firmware/rftypes/hb-wea-sens*
+
 
 #------------------------------------------------------------------------------
 # Undo DEVDB.tcl changes
 devdescrFile="/www/config/devdescr/DEVDB.tcl"
 devdescrSearch="$DEVICE {{50 \/config\/img\/devices\/50\/$DEVICE_THUMB} {250 \/config\/img\/devices\/250\/$DEVICE_IMG}} "
 sed -i "s/\($devdescrSearch\)//g" $devdescrFile
+
 
 #------------------------------------------------------------------------------
 # Undo webui.js changes
@@ -59,6 +62,7 @@ webuiSearch="WEATHER|RD_SENSOR_TYPE=GENERIC"
 sed -i "/\($webuiSearch\)/d" $webuiFile
 webuiSearch="WEATHER|RD_SENSOR_TYPE=STALLBIZ"
 sed -i "/\($webuiSearch\)/d" $webuiFile
+
 
 #------------------------------------------------------------------------------
 ### Undo stringtable_de.txt ###
@@ -112,6 +116,7 @@ sed -i "/\($stringtable_deSearch\)/d" $stringtable_deFile
 stringtable_deSearch="WEATHER|ANEMOMETER_RADIUS"
 sed -i "/\($stringtable_deSearch\)/d" $stringtable_deFile
 
+
 #------------------------------------------------------------------------------
 ### Undo translate.lang.stringtable.js ###
 translate_deFile="/www/webui/js/lang/de/translate.lang.stringtable.js"
@@ -161,6 +166,7 @@ translate_deSearch="stringTableWeatherRdSensorTypeGeneric"
 sed -i "/\(${translate_deSearch}\)/d" $translate_deFile
 translate_deSearch="stringTableWeatherRdSensorTypeStallBiz"
 sed -i "/\(${translate_deSearch}\)/d" $translate_deFile
+
 
 #------------------------------------------------------------------------------
 ### Undo english translate.lang.stringtable.js ###
@@ -212,9 +218,11 @@ sed -i "/\(${translate_enSearch}\)/d" $translate_enFile
 translate_enSearch="stringTableWeatherRdSensorTypeStallBiz"
 sed -i "/\(${translate_enSearch}\)/d" $translate_enFile
 
+
 #------------------------------------------------------------------------------
 # remove device_xml links
 rm -f $FIRMWARE_FILES
+
 
 #------------------------------------------------------------------------------
 # remove image files

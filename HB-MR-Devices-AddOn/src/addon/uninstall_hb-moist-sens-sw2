@@ -8,7 +8,9 @@ DEVICE_DESC="Bodenfeuchtesensor mit 2 Schaltausgaengen"
 # Name der Piktogramme, bestehend aus xx.png bzw. xx_thumb.png
 DEVICE_IMG=hb-moist-sens-sw2.png
 DEVICE_THUMB=hb-moist-sens-sw2_thumb.png
+# Name der Gerätebeschreibungs-Datei .xml
 FIRMWARE_FILE=/firmware/rftypes/hb-moist-sens-sw2.xml
+
 
 #------------------------------------------------------------------------------
 # Undo DEVDB.tcl changes
@@ -19,12 +21,36 @@ if [ "`cat $devdescrFile | grep \"$DEVICE\"`" ]; then
         sed -i "s/\($devdescrSearch\)//g" $devdescrFile
 fi
 
+
 #------------------------------------------------------------------------------
 # Undo webui.js changes
 webuiFile="/www/webui/webui.js"
 if [ "`cat $webuiFile | grep \"$DEVICE\"`" ]; then
         sed -i "/\($DEVICE\)/d" $webuiFile
 fi
+
+
+#------------------------------------------------------------------------------
+# Undo stringtable_de.txt 
+stringtable_deFile="/www/config/stringtable_de.txt"
+stringtable_deSearch="CAP_MOIST_HIGH_VALUE"
+sed -i "/\($stringtable_deSearch\)/d" $stringtable_deFile
+stringtable_deSearch="CAP_MOIST_LOW_VALUE"
+sed -i "/\($stringtable_deSearch\)/d" $stringtable_deFile
+
+
+#------------------------------------------------------------------------------
+### Edit translate.lang.stringtable.js
+translate_deFile="/www/webui/js/lang/de/translate.lang.stringtable.js"
+translate_deSearch="stringTableHbCapMoistHighValue"
+sed -i "/\(${translate_deSearch}\)/d" $translate_deFile
+translate_deSearch="stringTableHbCapMoistLowValue"
+sed -i "/\(${translate_deSearch}\)/d" $translate_deFile
+
+
+
+
+
 
 #------------------------------------------------------------------------------
 # remove device_xml links

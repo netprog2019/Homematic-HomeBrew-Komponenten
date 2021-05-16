@@ -8,6 +8,7 @@ DEVICE_DESC="Bodenfeuchtesensor"
 # Name der Piktogramme, bestehend aus xx.png bzw. xx_thumb.png
 DEVICE_IMG=hb-moist-sens.png
 DEVICE_THUMB=hb-moist-sens_thumb.png
+# Name der Gerätebeschreibungs-Datei .xml
 FIRMWARE_FILE=/firmware/rftypes/hb-moist-sens.xml
 
 #------------------------------------------------------------------------------

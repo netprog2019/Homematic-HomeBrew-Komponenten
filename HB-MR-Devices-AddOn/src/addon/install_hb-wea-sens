@@ -8,9 +8,10 @@ DEVICE_DESC="universeller Wetterdatensensor"
 # Name der Piktogramme, bestehend aus xx.png bzw. xx_thumb.png
 DEVICE_IMG=hb-wea-sens.png
 DEVICE_THUMB=hb-wea-sens_thumb.png
+# Name der Gerätebeschreibungs-Datei .xml
 FIRMWARE_FILES=/firmware/rftypes/hb-wea-sens*
 
-### remove old Firmware Files, will be newly copied by rc-script
+### alte Firmware-Dateien entfernen, die neuen werden dann vom rc-script kopiert
 rm -f $FIRMWARE_FILES
 
 #------------------------------------------------------------------------------
@@ -219,6 +220,7 @@ if [ -z "`cat $webuiFile | grep \"$webuiInsertParam\"`" ]; then
 	sed -i "s/\($webuiSearchBegin\)/\1$webuiInsert/g" $webuiFile
 fi
 
+
 #------------------------------------------------------------------------------
 ### Edit stringtable_de.txt ###
 stringtable_deFile="/www/config/stringtable_de.txt"
@@ -352,6 +354,7 @@ stringtable_deInsert="WEATHER|RD_SENSOR_TYPE=STALLBIZ\t\${stringTableWeatherRdSe
 if [ -z "`cat $stringtable_deFile | grep \"WEATHER|RD_SENSOR_TYPE=STALLBIZ"`" ]; then
     echo -e $stringtable_deInsert >> $stringtable_deFile
 fi
+
 
 #------------------------------------------------------------------------------
 ### Edit translate.lang.stringtable.js ###
@@ -487,6 +490,7 @@ translate_deInsert="\n    \"stringTableWeatherRdSensorTypeStallBiz\" : \"Stall.B
 if [ -z "`cat $translate_deFile | grep \"stringTableWeatherRdSensorTypeStallBiz\"`" ]; then
 	sed -i "s/\($translate_deSearch\)/\1$translate_deInsert/g" $translate_deFile
 fi
+
 
 #------------------------------------------------------------------------------
 ### Edit english translate.lang.stringtable.js ###

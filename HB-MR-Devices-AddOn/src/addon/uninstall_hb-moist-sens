@@ -8,6 +8,7 @@ DEVICE_DESC="Bodenfeuchtesensor"
 # Name der Piktogramme, bestehend aus xx.png bzw. xx_thumb.png
 DEVICE_IMG=hb-moist-sens.png
 DEVICE_THUMB=hb-moist-sens_thumb.png
+# Name der Gerätebeschreibungs-Datei .xml
 FIRMWARE_FILE=/firmware/rftypes/hb-moist-sens.xml
 
 #------------------------------------------------------------------------------
@@ -19,6 +20,7 @@ if [ "`cat $devdescrFile | grep \"$DEVICE\"`" ]; then
         sed -i "s/\($devdescrSearch\)//g" $devdescrFile
 fi
 
+
 #------------------------------------------------------------------------------
 # Undo webui.js changes
 webuiFile="/www/webui/webui.js"
@@ -26,9 +28,11 @@ if [ "`cat $webuiFile | grep \"$DEVICE\"`" ]; then
         sed -i "/\($DEVICE\)/d" $webuiFile
 fi
 
+
 #------------------------------------------------------------------------------
 # remove device_xml links
 rm -f $FIRMWARE_FILE
+
 
 #------------------------------------------------------------------------------
 # remove image files
