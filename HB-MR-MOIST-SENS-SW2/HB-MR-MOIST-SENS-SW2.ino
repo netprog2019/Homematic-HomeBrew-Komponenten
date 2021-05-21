@@ -50,7 +50,6 @@
 // all library classes are placed in the namespace 'as'
 using namespace as;
 
-uint8_t sabotageMsgDifferenz;
 
 // =====================================================================
 // ==                Geräteeigenschaften definieren                   ==
@@ -100,7 +99,7 @@ Hal hal;
 // ==   *siehe <parameter id="sabotageMsgDifferenz">                  ==
 // ==                                                                 ==
 // =====================================================================
-DEFREGISTER(Reg0, MASTERID_REGS, DREG_SABOTAGEMSG, DREG_TRANSMITTRYMAX, 0x21, 0x22, 0x23)
+DEFREGISTER(Reg0, MASTERID_REGS, DREG_SABOTAGEMSG, DREG_TRANSMITTRYMAX, 0x21, 0x22)
 class SensorList0 : public RegList0<Reg0> {
 public:
     SensorList0(uint16_t addr) : RegList0<Reg0>(addr) {}
@@ -108,13 +107,10 @@ public:
     bool Sendeintervall (uint16_t value) const { return this->writeRegister(0x21, (value >> 8) & 0xff) && this->writeRegister(0x22, value & 0xff); }
     uint16_t Sendeintervall () const { return (this->readRegister(0x21, 0) << 8) + this->readRegister(0x22, 0); }
 
-    bool sabotageMsgDifferenz (uint8_t value) const { return this->writeRegister(0x23, value); }
-    uint8_t sabotageMsgDifferenz () const { return (this->readRegister(0x23, 0)); }
-
+    
     void defaults() {
       clear();      
-      sabotageMsg(false);
-      sabotageMsgDifferenz(25);
+      sabotageMsg(false);      
       transmitDevTryMax(6);       
       Sendeintervall(60);
     }
@@ -211,8 +207,8 @@ public:
 
     // "SabotageMeldung" wird ausgelöst, wenn der Sensor zwischen zwei Messungen z.B: mehr als 25% Verlust hat
     bool testSabotage (uint8_t OldValue, uint8_t NewValue) {
-        if ((OldValue > NewValue && (OldValue - NewValue) > sabotageMsgDifferenz) || (NewValue == 0 && OldValue == 0) || (NewValue == 100 && OldValue == 100)) {
-             DPRINT(F("+Sensor Sabotage mit ")); DDEC(sabotageMsgDifferenz); DPRINT(F("% erkannt: alter Wert: "));
+        if ((OldValue > NewValue && (OldValue - NewValue) > 25) || (NewValue == 0 && OldValue == 0) || (NewValue == 100 && OldValue == 100)) {
+             DPRINT(F("+Sensor Sabotage mit ")); DPRINT(F("25% erkannt: alter Wert: "));
              DDEC(OldValue); DPRINT(F("% / neuer Wert: ")); DDEC(NewValue); DPRINTLN(F("%"));
 			       return true;
 		    } else {
@@ -289,6 +285,7 @@ public:
     //uint8_t flags() const { return 0; }
     uint8_t flags () const {
       uint8_t flags = sabotage ? 0x07 << 1 : 0x00;
+      //flags = 0x01 << 1; //Fehler Bodenfeuchtesensor - Sensor ist deaktiviert
       return flags;
     }
 };
@@ -342,11 +339,7 @@ public:
       uint8_t sabotageMsg = this->getList0().sabotageMsg();
       DPRINT("sabotageMsg: ");
       DDECLN(sabotageMsg);
-
-      sabotageMsgDifferenz = this->getList0().sabotageMsgDifferenz();
-      DPRINT("sabotageMsgDifferenz: ");
-      DDECLN(sabotageMsgDifferenz);
-
+      
       uint8_t txDevTryMax = this->getList0().transmitDevTryMax();
       DPRINT("transmitDevTryMax: ");
       DDECLN(txDevTryMax);

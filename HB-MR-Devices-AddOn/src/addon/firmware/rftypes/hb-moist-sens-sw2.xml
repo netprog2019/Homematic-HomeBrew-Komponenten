@@ -68,7 +68,7 @@
     
 	
 	
-	<channel index="1" type="WEATHER" autoregister="true">
+	<channel index="1" type="CAP_MOIST_SENSOR" autoregister="true">
       <paramset type="MASTER" id="hb_cap_moist_master">
       	<parameter id="CAP_MOIST_HIGH_VALUE">
        		<logical type="integer" min="0" max="1023" unit="" default="830" />
@@ -89,6 +89,7 @@
       	<parameter id="ERROR" operations="read,event" ui_flags="service" control="NONE">
           <logical type="option">
             <option id="NO_ERROR" index="0" default="true"/>
+			<option id="MOIST_SENSOR_OFF" index="1"/>
             <option id="SABOTAGE" index="7"/>
           </logical>
           <physical type="integer" interface="command" value_id="ERROR">

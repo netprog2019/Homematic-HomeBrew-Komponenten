@@ -29,13 +29,18 @@ if [ "`cat $webuiFile | grep \"$DEVICE\"`" ]; then
         sed -i "/\($DEVICE\)/d" $webuiFile
 fi
 
+webuiSearch="CAP_MOIST_SENSOR|ERROR=MOIST_SENSOR_OFF"
+sed -i "/\($webuiSearch\)/d" $webuiFile
+
 
 #------------------------------------------------------------------------------
 # Undo stringtable_de.txt 
 stringtable_deFile="/www/config/stringtable_de.txt"
-stringtable_deSearch="CAP_MOIST_HIGH_VALUE"
+stringtable_deSearch="CAP_MOIST_SENSOR|CAP_MOIST_HIGH_VALUE"
 sed -i "/\($stringtable_deSearch\)/d" $stringtable_deFile
-stringtable_deSearch="CAP_MOIST_LOW_VALUE"
+stringtable_deSearch="CAP_MOIST_SENSOR|CAP_MOIST_LOW_VALUE"
+sed -i "/\($stringtable_deSearch\)/d" $stringtable_deFile
+stringtable_deSearch="CAP_MOIST_SENSOR|ERROR=MOIST_SENSOR_OFF"
 sed -i "/\($stringtable_deSearch\)/d" $stringtable_deFile
 
 
@@ -46,7 +51,8 @@ translate_deSearch="stringTableHbCapMoistHighValue"
 sed -i "/\(${translate_deSearch}\)/d" $translate_deFile
 translate_deSearch="stringTableHbCapMoistLowValue"
 sed -i "/\(${translate_deSearch}\)/d" $translate_deFile
-
+translate_deSearch="stringTableHbCapMoistSensorFailure"
+sed -i "/\(${translate_deSearch}\)/d" $translate_deFile
 
 
 
