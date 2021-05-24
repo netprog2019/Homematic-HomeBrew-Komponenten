@@ -19,4 +19,4 @@
 <br><br>
 ## Geräteaufbau
 <br>
-<p align="center"><img src="Images/HB-MR-MOIST-SENS-SW2_pcb.png?raw=true"/></p>
+<p align="left"><img src="Images/HB-MR-MOIST-SENS-SW2_pcb.png?raw=true"/></p>
