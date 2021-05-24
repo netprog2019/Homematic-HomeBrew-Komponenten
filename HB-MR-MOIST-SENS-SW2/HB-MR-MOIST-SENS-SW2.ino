@@ -74,7 +74,7 @@ typedef StatusLed<LED_PIN> LedType;
 typedef AskSin<LedType, NoBattery, RadioType> Hal;
 Hal hal;
 
-
+uint8_t sensorofflinecounter;  
 
 // =====================================================================
 // ==                     Gerätebezogene Register                     ==
@@ -92,11 +92,6 @@ Hal hal;
 // == - die "freien" Register 0x20/21 werden hier als 16bit memory    ==
 // ==   für das Sende-Intervall in 1-3600 Sek. verwendet              ==
 // ==   *siehe <parameter id="Sendeintervall">                        ==
-// ==                                                                 ==
-// == - das "freie" Register 0x23 wird hier als 8bit memory für die   ==
-// ==   Differenz der Messungen um eine Sabotagemeldung auszulösen    ==
-// ==   verwendet                                                     ==
-// ==   *siehe <parameter id="sabotageMsgDifferenz">                  ==
 // ==                                                                 ==
 // =====================================================================
 DEFREGISTER(Reg0, MASTERID_REGS, DREG_SABOTAGEMSG, DREG_TRANSMITTRYMAX, 0x21, 0x22)
@@ -186,7 +181,8 @@ public:
 class Messkanal : public Channel<Hal, SensorList1, EmptyList, List4, PEERS_PER_CHANNEL, SensorList0>, public Alarm {
     MessEventMsg    msg;
     uint8_t         humidity;
-    uint8_t         sabotage;    
+    uint8_t         sabotage;  
+    uint8_t         sensoroffline;   
 
 public:
     Messkanal() : Channel(), Alarm(0), sabotage(0) {}
@@ -205,7 +201,7 @@ public:
         //sysclock.add(*this);
     }
 
-    // "SabotageMeldung" wird ausgelöst, wenn der Sensor zwischen zwei Messungen z.B: mehr als 25% Verlust hat
+    // "Sabotage_Meldung" wird ausgelöst, wenn der Sensor zwischen zwei Messungen z.B: mehr als 25% Verlust hat
     bool testSabotage (uint8_t OldValue, uint8_t NewValue) {
         if ((OldValue > NewValue && (OldValue - NewValue) > 25) || (NewValue == 0 && OldValue == 0) || (NewValue == 100 && OldValue == 100)) {
              DPRINT(F("+Sensor Sabotage mit ")); DPRINT(F("25% erkannt: alter Wert: "));
@@ -215,6 +211,26 @@ public:
 			       return false;
 		    }
 	  }
+
+    // "SensorOffline_Meldung" wird ausgelöst, wenn der Sensor zwischen nach 10 Messungen immer 0% anzeigt
+    bool testSensorOffline (uint8_t Value) {
+        if (Value < 10 && sensorofflinecounter < 20) {
+          sensorofflinecounter++;
+          DPRINT(F("+Sensor-Offline-Counter: "));
+          DDECLN(sensorofflinecounter);
+        } else {
+          sensorofflinecounter = 0;
+        }
+        if (sensorofflinecounter == 10) {
+            DPRINTLN(F("+Sensor ist Offline "));
+            return true;
+        } else {
+            return false;
+        }
+
+
+        
+    }
 
     void measure() {
       // save last value
@@ -262,6 +278,14 @@ public:
         changed(true); // das löscht die StatusInfoMessage (SabotageMeldung) wieder von der CCU
       }
 
+      if( testSensorOffline(humidity) == true ) {
+         sensoroffline = 1;
+         changed(true); // das löst eine StatusInfoMessage (SabotageMeldung) auf der CCU aus
+      } else {
+        sensoroffline = 0;
+        changed(true); // das löscht die StatusInfoMessage (SabotageMeldung) wieder von der CCU
+      }
+
       //Spannungsversorgung des Sensors wieder ausschalten
       digitalWrite(SENSOR_VCC_PIN, LOW);
     }
@@ -284,8 +308,8 @@ public:
 
     //uint8_t flags() const { return 0; }
     uint8_t flags () const {
-      uint8_t flags = sabotage ? 0x07 << 1 : 0x00;
-      //flags = 0x01 << 1; //Fehler Bodenfeuchtesensor - Sensor ist deaktiviert
+    uint8_t flags = sabotage ? 0x07 << 1 : 0x00;
+            flags = sensoroffline ? 0x01 << 1 : 0x00; //Fehler Bodenfeuchtesensor - Sensor ist deaktiviert       
       return flags;
     }
 };
