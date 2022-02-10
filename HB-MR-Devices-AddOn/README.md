@@ -20,7 +20,7 @@ _Bitte etwas Geduld haben - je nach Geschwindigkeit der SD Karte kann die Instal
 | <img src="src/addon/www/config/img/devices/250/hb-uni-rgb-led-ctrl.png" width=80/> | HB-MR-RGB-LED-STRG        | 0xFBF3 | ⚡️ | Homematic kompatibler LED Controller für adressierbare RGB-LEDs <br>[Relaunch des HB-UNI-RGB-LED-CTRL von Jérôme/jp112sdl](https://github.com/jp112sdl/HB-UNI-RGB-LED-CTRL) |
 | <img src="src/addon/www/config/img/devices/250/hb-wea-sens.png" width=80/> | [HB-MR-WEA-SENS](https://github.com/netprog2019/Homematic-HomeBrew-Komponenten/tree/main/HB-MR-WEA-SENS)            | 0xFBF4 | ⚡️ | Selbstbau Homematic Wetterstation <br>[Relaunch der HB-UNI-Sen-WEA von Jérôme/jp112sdl](https://github.com/jp112sdl/HB-UNI-Sen-WEA/wiki) |
 | <img src="src/addon/www/config/img/devices/250/hb-sc-sd-thp.png" width=80/> | [HB-MR-SC-SD-THP](https://github.com/netprog2019/Homematic-HomeBrew-Komponenten/tree/main/HB-MR-SC-SD-THP)           | 0xFBF5 | ⚡️ | Garagensensor <br>(ShutterContact, SmokeDetektor,Temperature, Humidity, AirPressure) |
-| <img src="src/addon/www/config/img/devices/250/hb-temp-sw1.png" width=80/> | [HB-MR-TEMP-SW1](https://github.com/netprog2019/Homematic-HomeBrew-Komponenten/tree/main/HB-MR-SC-SD-THPTEMP-SW1)           | 0xFBF6 | ⚡️ | Temperatursensor |
+| <img src="src/addon/www/config/img/devices/250/hb-temp-sw1.png" width=80/> | [HB-MR-TEMP-SW1](https://github.com/netprog2019/Homematic-HomeBrew-Komponenten/tree/main/HB-MR-TEMP-SW1)           | 0xFBF6 | ⚡️ | Temperatursensor |
 
 
 <br>
